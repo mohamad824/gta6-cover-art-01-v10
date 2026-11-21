@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEON VICE Cover Studio — GTA 6-style cover maker</title>
+<style>
+  :root{
+    --bg:#04081a; --panel:#0a1230; --panel2:#0d1738; --line:#1c2a52;
+    --ink:#e8f1ff; --muted:#8fa3c8; --mag:#ff2eaa; --cyan:#17b6e6;
+    --chip:#050b18;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:"Liberation Sans","DejaVu Sans",Arial,sans-serif}
+  body.shot-cover,body.shot-square,body.shot-portrait{background:#04081a}
+  body.shot-cover #app,body.shot-square #app,body.shot-portrait #app{display:none}
+  body.shot-cover #shotwrap,body.shot-square #shotwrap,body.shot-portrait #shotwrap{display:block}
+  #shotwrap{display:none;margin:0 auto}
+  #shotwrap canvas{display:block;margin:0 auto}
+  #app{max-width:1360px;margin:0 auto;padding:14px 16px 28px}
+  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  header h1{margin:0;font-size:26px;letter-spacing:2px;color:#fff;
+    text-shadow:0 0 18px rgba(255,46,170,.65),0 0 4px rgba(23,182,230,.8)}
+  header h1 span{color:var(--cyan)}
+  header p{margin:0;color:var(--muted);font-size:13px}
+  .wrap{display:grid;grid-template-columns:340px 1fr;gap:16px;margin-top:14px;align-items:start}
+  .col{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .col h2{margin:0 0 10px;font-size:13px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--ink);
+    border-radius:7px;padding:8px 11px;font-size:13px;font-weight:700}
+  button.on{background:var(--mag);border-color:var(--mag);color:#fff;
+    box-shadow:0 0 12px rgba(255,46,170,.55)}
+  button.cy.on{background:var(--cyan);border-color:var(--cyan);color:#04121c;
+    box-shadow:0 0 12px rgba(23,182,230,.55)}
+  button.go{background:#123a6e;border-color:var(--cyan)}
+  label{display:block;font-size:12px;color:var(--muted);margin:8px 0 3px}
+  input[type=text],select{width:100%;padding:7px 9px;border-radius:6px;border:1px solid var(--line);
+    background:#060d24;color:var(--ink);font-size:13px}
+  input[type=range]{width:100%;accent-color:var(--mag)}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .hint{font-size:12px;color:var(--muted);line-height:1.5}
+  .stage{background:#01040d;border:1px solid var(--line);border-radius:10px;padding:14px}
+  .stage .bar{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .stage .bar b{font-size:13px;letter-spacing:1px}
+  .stage .bar span{color:var(--muted);font-size:12px}
+  #cover{width:100%;height:auto;display:block;border-radius:4px;
+    box-shadow:0 0 0 1px #000,0 18px 50px rgba(0,0,0,.7),0 0 60px rgba(255,46,170,.12)}
+  .sizes{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .panelpick{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
+  .panelpick button{padding:6px 2px;font-size:11px}
+  .thumbrow{display:flex;gap:6px;margin-top:8px}
+  .thumbrow img{width:52px;height:40px;object-fit:cover;border-radius:4px;cursor:pointer;
+    border:2px solid transparent}
+  .thumbrow img.on{border-color:var(--mag)}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="shotwrap"><canvas id="shot"></canvas></div>
+<div id="app">
+  <header>
+    <h1>NEON VICE <span>COVER STUDIO</span></h1>
+    <p>Seven-panel GTA 6-style story cover maker — night neon-noir, rain-slicked downtown.</p>
+  </header>
+  <div class="wrap">
+    <div class="col">
+      <h2>Layout</h2>
+      <div class="row" id="layoutRow">
+        <button data-layout="story" class="on">7-Panel Story</button>
+        <button data-layout="classic">5-Panel Classic</button>
+        <button data-layout="hero">Hero Focus</button>
+      </div>
+      <div class="row">
+        <button id="nightBtn" class="cy on">NIGHT</button>
+        <button id="dayBtn" class="cy">DAY · dusk</button>
+        <button id="wantedBtn" class="on">WANTED ★★★★★</button>
+      </div>
+      <h2>Cover text</h2>
+      <label>Title</label><input type="text" id="fTitle" value="NEON VICE" maxlength="16">
+      <label>Script line</label><input type="text" id="fScript" value="Midnight Rain" maxlength="24">
+      <label>Quote bar</label><input type="text" id="fQuote" value="THE CITY NEVER DRIES" maxlength="48">
+      <label>Quote source</label><input type="text" id="fSource" value="VICE FM 99.9" maxlength="24">
+      <label>Bottom tagline</label><input type="text" id="fTag" value="THE CITY NEVER DRIES · COMING SOON" maxlength="48">
+      <h2>Panel</h2>
+      <div class="panelpick" id="panelPick"></div>
+      <label>Photo</label>
+      <div class="thumbrow" id="thumbRow"></div>
+      <label>Upload your own photo</label>
+      <input type="file" id="fUpload" accept="image/*">
+      <div class="grid3">
+        <div><label>Zoom <span id="zoomV">1.00×</span></label><input type="range" id="fZoom" min="1" max="2.2" step="0.05" value="1"></div>
+        <div><label>Shift ↔ <span id="dxV">0</span></label><input type="range" id="fDx" min="-40" max="40" step="1" value="0"></div>
+        <div><label>Shift ↕ <span id="dyV">0</span></label><input type="range" id="fDy" min="-40" max="40" step="1" value="0"></div>
+      </div>
+      <label>Place</label><input type="text" id="fPlace" maxlength="20">
+      <label>Time</label><input type="text" id="fTime" maxlength="12">
+      <label>Flavor</label><input type="text" id="fFlavor" maxlength="24">
+      <p class="hint">Pick a panel, then change its photo, crop or caption. Every change updates the live cover instantly.</p>
+    </div>
+    <div class="stage">
+      <div class="bar"><b>LIVE COVER</b><span>1280 × 720 · click Export to save a PNG</span></div>
+      <canvas id="cover" width="1280" height="720"></canvas>
+      <div class="sizes">
+        <button class="go" data-exp="1280x720">Export 1280 × 720</button>
+        <button class="go" data-exp="1920x1080">Export 1920 × 1080</button>
+        <button class="go" data-exp="1080x1080">Export 1080 × 1080</button>
+        <button class="go" data-exp="1080x1350">Export 1080 × 1350</button>
+        <button id="resetBtn">Reset cover</button>
+      </div>
+      <p class="hint">Exports: the 1280 × 720 and 1920 × 1080 files are the full cover; the square and portrait files letterbox the cover on a midnight-navy field, ready to post.</p>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
